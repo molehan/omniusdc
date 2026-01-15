@@ -6,7 +6,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
-import {HookDataV1} from "./HookDataV1.sol";
+import {HookDataV1} from "../common/HookDataV1.sol";
 
 contract L2Gateway is ReentrancyGuard {
     using SafeERC20 for IERC20;

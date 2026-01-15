@@ -5,7 +5,8 @@ import "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {L2Gateway} from "../src/l2/L2Gateway.sol";
-import {HookDataV1} from "../src/l2/HookDataV1.sol";
+import {HookDataV1} from "../src/common/HookDataV1.sol";
+
 import {MockTokenMessengerV2} from "./mocks/MockTokenMessengerV2.sol";
 
 // استخدم Mock USDC الموجود عندك من الخطوات السابقة.
