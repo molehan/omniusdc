@@ -10,7 +10,6 @@ import {HookDataV1} from "../src/common/HookDataV1.sol";
 import {MockTokenMessengerV2} from "./mocks/MockTokenMessengerV2.sol";
 import {ITokenMessengerV2} from "../src/l2/interfaces/ITokenMessengerV2.sol";
 
-
 // استخدم Mock USDC الموجود عندك من الخطوات السابقة.
 // إذا لا يوجد، استبدله بأي ERC20 مع decimals=6.
 import {MockUSDC} from "./mocks/MockUSDC.sol";
@@ -51,14 +50,13 @@ contract L2GatewayTest is Test {
         gateway.deposit(amount, ownerL1, L2Gateway.TransferMode.Fast, maxFee, clientNonce, referral);
         assertEq(messenger.lastSelector(), ITokenMessengerV2.depositForBurnWithHook.selector);
 
-
         assertEq(usdc.balanceOf(user), userBefore - amount);
 
         assertEq(messenger.lastCaller(), address(gateway));
         assertEq(messenger.lastAmount(), amount);
         assertEq(messenger.lastDestinationDomain(), uint32(0));
         assertEq(messenger.lastMintRecipient(), execB32);
-        
+
         assertEq(messenger.lastDestinationCaller(), execB32);
         assertEq(messenger.lastMaxFee(), maxFee);
         assertEq(messenger.lastMinFinalityThreshold(), uint32(1000)); // Fast :contentReference[oaicite:13]{index=13}

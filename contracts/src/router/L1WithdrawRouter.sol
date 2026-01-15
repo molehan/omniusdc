@@ -24,25 +24,24 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
 
     enum TransferMode {
         Standard, // 0
-        Fast      // 1
+        Fast // 1
     }
 
     struct WithdrawIntent {
-        address owner;        // shares owner on L1
-        address receiver;     // receives USDC on L2
-        uint256 shares;       // shares to redeem
+        address owner; // shares owner on L1
+        address receiver; // receives USDC on L2
+        uint256 shares; // shares to redeem
         uint256 minAssetsOut; // minimum net-out (after worst-case fee)
-        uint32  dstDomain;    // CCTP domain for destination chain
-        uint8   mode;         // 0=Standard, 1=Fast
-        uint256 maxFee;       // max fee (units of USDC)
-        uint256 deadline;     // unix timestamp
-        uint256 nonce;        // must equal nonces[owner]
+        uint32 dstDomain; // CCTP domain for destination chain
+        uint8 mode; // 0=Standard, 1=Fast
+        uint256 maxFee; // max fee (units of USDC)
+        uint256 deadline; // unix timestamp
+        uint256 nonce; // must equal nonces[owner]
     }
 
-    bytes32 public constant WITHDRAW_INTENT_TYPEHASH =
-        keccak256(
-            "WithdrawIntent(address owner,address receiver,uint256 shares,uint256 minAssetsOut,uint32 dstDomain,uint8 mode,uint256 maxFee,uint256 deadline,uint256 nonce)"
-        );
+    bytes32 public constant WITHDRAW_INTENT_TYPEHASH = keccak256(
+        "WithdrawIntent(address owner,address receiver,uint256 shares,uint256 minAssetsOut,uint32 dstDomain,uint8 mode,uint256 maxFee,uint256 deadline,uint256 nonce)"
+    );
 
     error Paused();
     error DomainNotAllowed(uint32 domain);
@@ -85,9 +84,7 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
 
     bool public paused;
 
-    constructor(address vault_, address tokenMessenger_)
-        EIP712("OmniUSDC Withdraw Router", "1")
-    {
+    constructor(address vault_, address tokenMessenger_) EIP712("OmniUSDC Withdraw Router", "1") {
         vault = USDCVault(vault_);
         usdc = IERC20(USDCVault(vault_).asset());
         tokenMessenger = ITokenMessengerV2(tokenMessenger_);
@@ -131,11 +128,7 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
     }
 
     /// @notice permitSig optional: abi.encode(uint256 permitDeadline, uint8 v, bytes32 r, bytes32 s)
-    function execute(
-        WithdrawIntent calldata intent,
-        bytes calldata signature,
-        bytes calldata permitSig
-    )
+    function execute(WithdrawIntent calldata intent, bytes calldata signature, bytes calldata permitSig)
         external
         nonReentrant
         returns (uint256 assetsBurnedGross)
@@ -174,8 +167,7 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
         if (worstCaseNet < intent.minAssetsOut) revert MinAssetsOutNotMet(worstCaseNet, intent.minAssetsOut);
 
         // burn via CCTP (without hooks)
-        uint32 minFinalityThreshold =
-            (intent.mode == uint8(TransferMode.Fast)) ? FINALITY_FAST : FINALITY_STANDARD;
+        uint32 minFinalityThreshold = (intent.mode == uint8(TransferMode.Fast)) ? FINALITY_FAST : FINALITY_STANDARD;
 
         usdc.forceApprove(address(tokenMessenger), assets);
 
@@ -184,7 +176,7 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
             intent.dstDomain,
             CCTPMessageV2.addressToBytes32(intent.receiver),
             address(usdc),
-            destinationCaller,      // bytes32(0) => permissionless receiveMessage on dst :contentReference[oaicite:8]{index=8}
+            destinationCaller, // bytes32(0) => permissionless receiveMessage on dst :contentReference[oaicite:8]{index=8}
             intent.maxFee,
             minFinalityThreshold
         );

@@ -62,7 +62,7 @@ contract L1WithdrawRouterTest is Test {
             shares: 500e6,
             minAssetsOut: 498e6, // net worst-case
             dstDomain: dstDomain,
-            mode: 0,             // Standard
+            mode: 0, // Standard
             maxFee: 2e6,
             deadline: block.timestamp + 1 hours,
             nonce: 0
@@ -94,7 +94,8 @@ contract L1WithdrawRouterTest is Test {
             keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
         uint256 permitNonce = vault.nonces(owner);
-        bytes32 structHash = keccak256(abi.encode(PERMIT_TYPEHASH, owner, address(router), shares, permitNonce, permitDeadline));
+        bytes32 structHash =
+            keccak256(abi.encode(PERMIT_TYPEHASH, owner, address(router), shares, permitNonce, permitDeadline));
         bytes32 digest = keccak256(abi.encodePacked("\x19\x01", vault.DOMAIN_SEPARATOR(), structHash));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerPk, digest);
         bytes memory permitSig = abi.encode(permitDeadline, v, r, s);
