@@ -27,6 +27,8 @@ contract USDCVault is ERC4626, ERC20Permit, AccessControl, ReentrancyGuard {
     error AllocationsPaused();
     error StrategyNotEnabled(address strategy);
     error InsufficientLiquidity(uint256 needed, uint256 available);
+    error NotSweepable(address token);
+    error ZeroTo();
 
     event ManagersSet(address indexed strategyManager, address indexed riskManager);
     event DepositsPausedSet(bool paused);
@@ -35,6 +37,7 @@ contract USDCVault is ERC4626, ERC20Permit, AccessControl, ReentrancyGuard {
 
     event StrategyAllocated(address indexed strategy, uint256 assets);
     event StrategyDeallocated(address indexed strategy, uint256 withdrawn);
+    event Swept(address indexed token, address indexed to, uint256 amount);
 
     IStrategyManager public strategyManager;
     IRiskManager public riskManager;
@@ -83,6 +86,19 @@ contract USDCVault is ERC4626, ERC20Permit, AccessControl, ReentrancyGuard {
         allocationsPaused = paused;
         emit AllocationsPausedSet(paused);
     }
+    function sweep(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    if (to == address(0)) revert ZeroTo();
+
+    // ممنوع سحب الـ underlying USDC
+    if (token == asset()) revert NotSweepable(token);
+
+    // ممنوع سحب shares (vault ERC20 هو نفسه العقد)
+    if (token == address(this)) revert NotSweepable(token);
+
+    IERC20(token).safeTransfer(to, amount);
+    emit Swept(token, to, amount);
+}
+
 
     // -----------------------------
     // ERC-4626 overrides

@@ -8,6 +8,9 @@ optimizer = true
 optimizer_runs = 200
 via_ir = true
 
+
+
+
 remappings = [
     "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
     "@aave/core-v3/=lib/aave-v3-core/contracts/",
@@ -15,5 +18,11 @@ remappings = [
     "@circle/cctp/=lib/evm-cctp-contracts/src/",
     "solady/=lib/solady/src/"
 ]
+
+fs_permissions = [
+    { access = "read", path = "./configs" },
+    { access = "read-write", path = "./deployments" }
+]
+
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

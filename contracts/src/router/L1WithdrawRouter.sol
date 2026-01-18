@@ -21,6 +21,8 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
     // Confirmed (Fast)=1000, Finalized(Standard)=2000 :contentReference[oaicite:6]{index=6}
     uint32 public constant FINALITY_FAST = 1000;
     uint32 public constant FINALITY_STANDARD = 2000;
+    uint256 public maxMaxFee;        // 0 => disabled
+    uint256 public maxSharesPerTx;   // 0 => disabled
 
     enum TransferMode {
         Standard, // 0
@@ -51,10 +53,14 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
     error InvalidSignature();
     error MaxFeeTooHigh(uint256 assets, uint256 maxFee);
     error MinAssetsOutNotMet(uint256 worstCaseNet, uint256 minAssetsOut);
-
+    error MaxFeeCapExceeded(uint256 cap, uint256 provided);
+    error MaxSharesPerTxExceeded(uint256 cap, uint256 provided); 
+    
     event PausedSet(bool paused);
     event DestinationDomainAllowed(uint32 indexed domain, bool allowed);
     event DestinationCallerSet(bytes32 destinationCaller);
+    event MaxMaxFeeSet(uint256 cap);
+    event MaxSharesPerTxSet(uint256 cap);  
 
     event WithdrawExecuted(
         bytes32 indexed intentDigest,
@@ -126,6 +132,16 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
         );
         digest = _hashTypedDataV4(structHash);
     }
+    function setMaxMaxFee(uint256 cap) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    maxMaxFee = cap;
+    emit MaxMaxFeeSet(cap);
+}
+
+function setMaxSharesPerTx(uint256 cap) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    maxSharesPerTx = cap;
+    emit MaxSharesPerTxSet(cap);
+}
+
 
     /// @notice permitSig optional: abi.encode(uint256 permitDeadline, uint8 v, bytes32 r, bytes32 s)
     function execute(WithdrawIntent calldata intent, bytes calldata signature, bytes calldata permitSig)
@@ -139,6 +155,13 @@ contract L1WithdrawRouter is EIP712, AccessControl, ReentrancyGuard {
         if (block.timestamp > intent.deadline) revert Expired(intent.deadline, block.timestamp);
 
         if (intent.mode > uint8(TransferMode.Fast)) revert InvalidMode(intent.mode);
+        if (maxMaxFee != 0 && intent.maxFee > maxMaxFee) {
+    revert MaxFeeCapExceeded(maxMaxFee, intent.maxFee);
+}
+
+if (maxSharesPerTx != 0 && intent.shares > maxSharesPerTx) {
+    revert MaxSharesPerTxExceeded(maxSharesPerTx, intent.shares);
+}
 
         // nonce check (strictly sequential)
         uint256 expected = nonces[intent.owner];

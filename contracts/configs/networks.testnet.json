@@ -1,0 +1,35 @@
+{
+  "sepolia": {
+    "name": "Ethereum Sepolia",
+    "chainId": 11155111,
+    "domainId": 0,
+    "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    "cctp": {
+      "tokenMessengerV2": "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+      "messageTransmitterV2": "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275"
+    },
+    "protocol": {
+      "vault": "0x0000000000000000000000000000000000000000",
+      "executor": "0x0000000000000000000000000000000000000000",
+      "withdrawRouter": "0x0000000000000000000000000000000000000000",
+      "riskManager": "0x0000000000000000000000000000000000000000",
+      "strategyManager": "0x0000000000000000000000000000000000000000"
+    }
+  },
+  "baseSepolia": {
+    "name": "Base Sepolia",
+    "chainId": 84532,
+    "domainId": 6,
+    "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    "cctp": {
+      "tokenMessengerV2": "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+      "messageTransmitterV2": "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275"
+    },
+    "protocol": {
+      "l2Gateway": "0x0000000000000000000000000000000000000000"
+    }
+  },
+  "iris": {
+    "sandboxBase": "https://iris-api-sandbox.circle.com"
+  }
+}

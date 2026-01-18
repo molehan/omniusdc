@@ -1,0 +1,150 @@
+
+cp .env.example .env
+# عبّئ القيم: RPC/PK/العناوين...
+npm run typecheck
+npm run worker
+
+
+
+
+
+# Relayer Alerts Runbook (RC)
+
+## 1) Attestation pending too long
+**Symptom:** Job stuck in `iris_pending` أكثر من X دقيقة.
+
+**Checks:**
+1. تأكد أن burn tx ناجح على Explorer (status=1).
+2. جرّب يدويًا:
+   - GET `${IRIS_BASE}/v2/messages/{domain}?transactionHash={txHash}`
+3. إن كانت 404 لفترة طويلة:
+   - هذا يعني Iris لم تنتج attestation بعد أو يوجد تأخير.
+
+**Actions:**
+- انتظر / قلل polling.
+- إذا كان لديك eventNonce وتحتاج رفع نهائية أو إعادة attestation:
+  - POST `${IRIS_BASE}/v2/reattest/{eventNonce}`
+
+---
+
+## 2) Relay pending too long
+**Symptom:** Iris complete لكن dest tx لم يُرسل أو لم يُؤكد.
+
+**Checks:**
+1. هل `RELAY_ENABLED=1`؟
+2. هل PK عليها ETH للغاز على الشبكة الوجهة؟
+3. هل RPC rate limited؟
+4. تحقق من عنوان العقد:
+   - deposit => يجب finalize على L1_EXECUTOR
+   - withdraw => receiveMessage على MessageTransmitterV2 في L2
+
+**Actions:**
+- أعد تشغيل worker.
+- نفّذ relay يدويًا مرة واحدة للتشخيص:
+  - `npm run relay:l2-to-l1 -- <txHash>` أو `npm run relay:l1-to-l2 -- <txHash>`
+
+---
+
+## 3) finalize reverted
+**Common causes:**
+- destinationCaller mismatch (تصميمكم يفرض finalize عبر Executor)
+- wrong executor address
+- message already processed => Nonce already used (اعتبره OK)
+
+---
+
+## 4) receiveMessage reverted (NOT already processed)
+**Common causes:**
+- wrong MessageTransmitter address / wrong chain
+- attestation not matching message
+- insufficient gas
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cast send "$USDC_L2" \
+  "approve(address,uint256)" 0x3CD294be09A506df94261785DB8F106C04085d15 \
+  115792089237316195423570985008687907853269984665640564039457584007913129639935 \
+  --rpc-url "$RPC_L2" \
+  --private-key "$PK_L2"
+
+AMOUNT=1000000
+OWNER_L1=0xeD764662a6091296165445a1144f386589d964BF   # عنوانك على L1 الذي سيستلم shares
+MODE=0           # 0=Standard, 1=Fast
+MAXFEE=0
+NONCE=1
+REF=0x0000000000000000000000000000000000000000000000000000000000000000
+
+cast send "$L2_GATEWAY" \
+  "deposit(uint256,address,uint8,uint256,uint64,bytes32)" \
+  $AMOUNT $PK_L1 $MODE $MAXFEE $NONCE $REF \
+  --rpc-url "$RPC_L2" \
+  --private-key "$PK_L2"
+
+
+export TX_HASH=0x632ec4b02d2e7cd755a64960be81ca8dafa37ed28df5f4b66213b29a282a46f6
+
+
+
+
+
+
+
+
+
+
+
+# RPCs
+RPC_L1=https://rpc.ankr.com/eth_sepolia/cf7cdeb4baf00c82329275cd6a2754168d7e807c0528d457b8aafeba14112187
+RPC_L2=https://rpc.ankr.com/base_sepolia/cf7cdeb4baf00c82329275cd6a2754168d7e807c0528d457b8aafeba14112187
+ETHERSCAN_API_KEY=ZZAHP3Q2Y431BJH5IPDI6412TZ64HPHYG8
+# Relayer keys (يمتلك ETH testnet للغاز على كل شبكة)
+PK_L1=0xcf613f5b38f743c9e65695ea36f3038528ab053cbfd0f223f12320348a4f1c55
+PK_L2=0xcf613f5b38f743c9e65695ea36f3038528ab053cbfd0f223f12320348a4f1c55
+
+
+IRIS_BASE=https://iris-api-sandbox.circle.com
+
+# Domains
+DOMAIN_L1=0
+DOMAIN_L2=6
+
+# USDC addresses (CCTP canonical testnet)
+USDC_L1=0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+USDC_L2=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+
+# Circle CCTP V2
+CCTP_TOKEN_MESSENGER_V2=0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA
+CCTP_MESSAGE_TRANSMITTER_V2=0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275
+
+# Deployed protocol contracts
+VAULT_L1=0x141ED07aFE0813bD48731c5c33B814B2Df90741a
+L1_EXECUTOR=0xa62d9C263AC89909c461b23Ac5079633Abc78056
+L1_WITHDRAW_ROUTER=0x7A62eaFFfcAD85f4a5D6715B06eeC4704C34141e
+L2_GATEWAY=0x3CD294be09A506df94261785DB8F106C04085d15
+
+
+
+
+
+AMOUNT=1000000
+OWNER_L1=0xeD764662a6091296165445a1144f386589d964BF   # عنوانك على L1 الذي سيستلم shares
+MODE=0           # 0=Standard, 1=Fast
+MAXFEE=0
+NONCE=1
+REF=0x0000000000000000000000000000000000000000000000000000000000000000

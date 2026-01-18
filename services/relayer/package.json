@@ -1,0 +1,27 @@
+{
+  "name": "omniusdc-relayer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "relay:l2-to-l1": "node --loader ts-node/esm src/relay-l2-to-l1.ts",
+    "relay:l1-to-l2": "node --loader ts-node/esm src/relay-l1-to-l2.ts",
+    "quote:fees": "node --loader ts-node/esm src/quote-fees.ts",
+    "reattest": "node --loader ts-node/esm src/reattest.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "worker": "node --loader ts-node/esm src/worker.ts" 
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.2",
+    "better-sqlite3": "^11.10.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "prisma": "^6.19.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

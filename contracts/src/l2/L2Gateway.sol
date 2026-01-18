@@ -7,8 +7,9 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 
 import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
 import {HookDataV1} from "../common/HookDataV1.sol";
+import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract L2Gateway is ReentrancyGuard {
+contract L2Gateway is ReentrancyGuard, AccessControl {
     using SafeERC20 for IERC20;
 
     enum TransferMode {
@@ -42,10 +43,17 @@ contract L2Gateway is ReentrancyGuard {
         uint64 clientNonce,
         bytes32 referralCode
     );
+    event Swept(
+        address indexed token, 
+        address indexed to, 
+        uint256 amount
+        );
 
     error ZeroAddress();
     error ZeroAmount();
     error InvalidOwner();
+    error NotSweepable(address token);
+    error ZeroTo();
 
     constructor(address usdc_, address tokenMessenger_, uint32 destinationDomain_, address l1Executor_) {
         if (usdc_ == address(0) || tokenMessenger_ == address(0) || l1Executor_ == address(0)) {
@@ -56,6 +64,8 @@ contract L2Gateway is ReentrancyGuard {
         tokenMessenger = ITokenMessengerV2(tokenMessenger_);
         destinationDomain = destinationDomain_;
         l1ExecutorBytes32 = _addressToBytes32(l1Executor_);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
     }
 
     function deposit(
@@ -109,6 +119,12 @@ contract L2Gateway is ReentrancyGuard {
             referralCode
         );
     }
+    function sweep(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    if (to == address(0)) revert ZeroTo();
+    if (token == address(usdc)) revert NotSweepable(token);
+    IERC20(token).safeTransfer(to, amount);
+    emit Swept(token, to, amount);
+}
 
     function _addressToBytes32(address a) internal pure returns (bytes32) {
         // Circle docs تشير لتحويل العنوان إلى bytes32 عبر padding أصفار (prefix zeros). :contentReference[oaicite:11]{index=11}
